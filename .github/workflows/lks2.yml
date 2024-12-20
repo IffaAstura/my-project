@@ -1,0 +1,55 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # Menambahkan langkah untuk membersihkan cache Gradle
+    - name: Clear Gradle cache
+      run: rm -rf ~/.gradle/caches/
+
+    # Setup Gradle dengan versi terbaru (misalnya Gradle 8.9)
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4.0.0
+      with:
+        gradle-version: '8.9'  # Ubah ke versi yang lebih baru, misalnya 8.9
+
+    - name: Gsrant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # Menambahkan opsi --no-daemon untuk menghindari masalah dengan Gradle Daemon
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build --no-daemon
+
+  dependency-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # Menghasilkan dan mengirimkan dependency graph untuk Dependabot Alerts
+    - name: Generate and submit dependency graph
+      uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
